@@ -1,9 +1,10 @@
 <?php
 
+use Carbon\Carbon;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Database\Query\Builder;
 use App\Http\Controllers\UserController;
-use Illuminate\Contracts\Database\Query\Builder;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -15,11 +16,44 @@ use Illuminate\Contracts\Database\Query\Builder;
 |
 */
 
+
+
 Route::get('/', function () {
     return view('welcome');
 });
+// dd($users);
+Route::match(['get', 'post'], '/test', function () {
+    $users = User::select('name')->get();
+    dd($users);
+});
+Route::get('users' , function(){
+    $users = User::with('employees');
+    dump($users);
 
-Route::get('user',function(){
+    $users = User::all();
+
+    foreach ($users as $user){
+        echo $user->name . "<br>";
+    }
+//    dd($user1);
+// $users = $query->addSelect('email')->get();
+    // $users = DB::table('users')->select('status')->distinct()->get();
+    // $users = User::get();
+    // if(User::where('status',1)->exists()){
+    //     foreach($users as $user){
+    //         return $user;
+    //     }
+    // }
+    // dd($users);
+    // foreach($users as $user){
+    //     return $user;
+    //     dd($user);
+    // }
+    // $users = User::findOrFail(6)->employees;
+//dd($users);
+
+});
+Route::get('user',function(Builder $builder){
     // dd(DB::table('users')->select('updated_at',DB::raw('count(*)'))->groupBy('updated_at')->get()->value('name'));
     // $user = DB::table('users')
     //             ->get()
@@ -83,9 +117,25 @@ Route::get('user',function(){
 // ->get();
 // $users = DB::table('users')->whereBetween('id' ,[11,16])->where('status','0')->get();
 
-$users = DB::table('users')
-                ->offset(10)
-                ->limit(5)
-                ->get();
-dd($users);
+// $users = DB::table('users')
+//                 ->where('id','2')
+//                 ->update(['name' => 'Tariq Ahmad', 'email'=>'chtariq144@gmail.com']);
+// dd($users);
+
+$request=Carbon::today();
+dd(Carbon::createFromFormat('Y-m-d H:i:s', $request)->toString());
+dd(Carbon::today()->isoFormat(' MMMM Do YYYY, h:mm'));
+
+
+
+
+
+$users = DB::table('users')->where('status',0)
+        ->chunk(10, function($users){
+            foreach($users as $user){
+                DB::table('users')
+                ->where('status',$user->status)
+                ->update('status',1);
+            }
+        })->dd();
 });
